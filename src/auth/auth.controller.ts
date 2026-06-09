@@ -2,7 +2,6 @@ import { Controller, Post, Body, Get, Request, UseGuards, Res } from '@nestjs/co
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')
@@ -32,11 +31,6 @@ export class AuthController {
       path: '/',
     });
     return { success: true };
-  }
-
-  @Post('register')
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
   }
 
   @UseGuards(JwtAuthGuard)
