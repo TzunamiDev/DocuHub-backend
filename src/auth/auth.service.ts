@@ -31,11 +31,14 @@ export class AuthService implements OnApplicationBootstrap {
         });
         this.logger.log(`Admin user '${adminUsername}' created successfully.`);
       } else {
-        this.logger.log(`Admin user '${adminUsername}' exists. Syncing password with environment variables...`);
+        this.logger.log(`Admin user '${adminUsername}' exists. Syncing password and role with environment variables...`);
         const salt = await bcrypt.genSalt(12);
         const passwordHash = await bcrypt.hash(adminPassword, salt);
-        await this.usersService.update(existingUser.id, { passwordHash });
-        this.logger.log(`Password for '${adminUsername}' has been successfully synced.`);
+        await this.usersService.update(existingUser.id, { 
+          passwordHash,
+          role: 'admin' as any 
+        });
+        this.logger.log(`Password and Admin Role for '${adminUsername}' have been successfully synced.`);
       }
     }
   }
