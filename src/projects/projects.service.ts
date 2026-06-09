@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { Project } from './entities/project.entity';
 import { CreateProjectDto } from './dto/create-project.dto';
 
@@ -15,8 +15,11 @@ export class ProjectsService {
     if (search) {
       return this.projectsRepository.find({
         where: [
-          { name: Like(`%${search}%`) },
-          { description: Like(`%${search}%`) },
+          { name: ILike(`%${search}%`) },
+          { description: ILike(`%${search}%`) },
+          { tags: ILike(`%${search}%`) },
+          { author: ILike(`%${search}%`) },
+          { shortLink: ILike(`%${search}%`) },
         ],
         relations: { versions: true },
       });
