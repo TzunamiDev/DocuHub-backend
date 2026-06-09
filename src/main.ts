@@ -23,11 +23,12 @@ async function bootstrap() {
       },
     },
     crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
   }));
 
   // CORS
   app.enableCors({
-    origin: ['http://localhost:5173', 'https://docuhub.tzunami.dev'],
+    origin: true,
     credentials: true,
   });
 
