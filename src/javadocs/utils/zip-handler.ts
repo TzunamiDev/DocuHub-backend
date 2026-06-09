@@ -2,8 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import * as path from 'path';
 import * as fs from 'fs';
 import AdmZip from 'adm-zip';
-import { v4 as uuidv4 } from 'uuid';
-
+import * as crypto from 'crypto';
 export class ZipHandler {
   static async extractZip(file: Express.Multer.File, uploadDir: string): Promise<string> {
     // Basic validation for zip extension
@@ -17,7 +16,7 @@ export class ZipHandler {
     }
 
     // Generate unique folder name
-    const uniqueFolderName = uuidv4();
+    const uniqueFolderName = crypto.randomUUID();
     const destDir = path.resolve(uploadDir, uniqueFolderName);
 
     if (!fs.existsSync(destDir)) {
