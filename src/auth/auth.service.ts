@@ -31,9 +31,11 @@ export class AuthService implements OnApplicationBootstrap {
         });
         this.logger.log(`Admin user '${adminUsername}' created successfully.`);
       } else {
-        // Optional: Update password if we want the env variable to be the source of truth,
-        // but typically we just seed it once. We'll leave it as is.
-        this.logger.log(`Admin user '${adminUsername}' already exists. Skipping creation.`);
+        this.logger.log(`Admin user '${adminUsername}' exists. Syncing password with environment variables...`);
+        const salt = await bcrypt.genSalt(12);
+        const passwordHash = await bcrypt.hash(adminPassword, salt);
+        await this.usersService.update(existingUser.id, { passwordHash });
+        this.logger.log(`Password for '${adminUsername}' has been successfully synced.`);
       }
     }
   }

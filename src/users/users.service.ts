@@ -22,4 +22,8 @@ export class UsersService {
     const newUser = this.usersRepository.create(user);
     return this.usersRepository.save(newUser);
   }
+
+  async update(id: string, updateData: Partial<User>): Promise<void> {
+    await this.usersRepository.update(id, updateData);
+  }
 }
