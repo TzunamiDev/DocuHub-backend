@@ -15,7 +15,7 @@ export class AuthController {
     res.cookie('Authentication', access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       path: '/',
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
@@ -27,6 +27,8 @@ export class AuthController {
   async logout(@Res({ passthrough: true }) res: Response) {
     res.cookie('Authentication', '', {
       httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       expires: new Date(0),
       path: '/',
     });
