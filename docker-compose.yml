@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: docuhub-postgres
+    environment:
+      POSTGRES_USER: docuhub
+      POSTGRES_PASSWORD: docuhub_password
+      POSTGRES_DB: docuhub_db
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

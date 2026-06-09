@@ -1,0 +1,65 @@
+import { BadRequestException } from '@nestjs/common';
+import * as path from 'path';
+import * as fs from 'fs';
+import AdmZip from 'adm-zip';
+import { v4 as uuidv4 } from 'uuid';
+
+export class ZipHandler {
+  static async extractZip(file: Express.Multer.File, uploadDir: string): Promise<string> {
+    // Basic validation for zip extension
+    if (!file.originalname.toLowerCase().endsWith('.zip')) {
+      throw new BadRequestException('File must be a ZIP archive');
+    }
+
+    // Validate magic bytes (PK\x03\x04)
+    if (file.buffer.length < 4 || file.buffer[0] !== 0x50 || file.buffer[1] !== 0x4B || file.buffer[2] !== 0x03 || file.buffer[3] !== 0x04) {
+      throw new BadRequestException('Invalid ZIP format');
+    }
+
+    // Generate unique folder name
+    const uniqueFolderName = uuidv4();
+    const destDir = path.resolve(uploadDir, uniqueFolderName);
+
+    if (!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true });
+    }
+
+    try {
+      const zip = new AdmZip(file.buffer);
+      const zipEntries = zip.getEntries();
+
+      for (const entry of zipEntries) {
+        // Prevent directory traversal attacks
+        if (entry.entryName.includes('../') || entry.entryName.includes('..\\')) {
+          throw new BadRequestException('ZIP contains invalid paths (directory traversal detected)');
+        }
+
+        const fullPath = path.resolve(destDir, entry.entryName);
+        
+        // Strict boundary check: ensure the resolved path is strictly inside the destination directory
+        if (!fullPath.startsWith(destDir + path.sep) && fullPath !== destDir) {
+            throw new BadRequestException('ZIP contains paths escaping the extraction directory');
+        }
+
+        if (!entry.isDirectory) {
+          const content = zip.readFile(entry);
+          if (content) {
+             const dirname = path.dirname(fullPath);
+             if (!fs.existsSync(dirname)) {
+                fs.mkdirSync(dirname, { recursive: true });
+             }
+             fs.writeFileSync(fullPath, content);
+          }
+        }
+      }
+
+      return uniqueFolderName;
+    } catch (err) {
+       // Cleanup on failure
+       if (fs.existsSync(destDir)) {
+           fs.rmSync(destDir, { recursive: true, force: true });
+       }
+       throw new BadRequestException(`Failed to process ZIP file: ${err.message}`);
+    }
+  }
+}
