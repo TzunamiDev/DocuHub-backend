@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, In } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Javadoc } from './entities/javadoc.entity';
 import { CreateJavadocDto } from './dto/create-javadoc.dto';
 import { ZipHandler } from './utils/zip-handler';
 import { ConfigService } from '@nestjs/config';
+import { ProjectsService } from '../projects/projects.service';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -16,6 +17,7 @@ export class JavadocsService {
     @InjectRepository(Javadoc)
     private javadocRepository: Repository<Javadoc>,
     private configService: ConfigService,
+    private projectsService: ProjectsService,
   ) {
     this.uploadDir = path.resolve(this.configService.get<string>('app.uploadDir') || 'uploads');
     if (!fs.existsSync(this.uploadDir)) {
@@ -23,42 +25,13 @@ export class JavadocsService {
     }
   }
 
-  async findAll(search?: string): Promise<Javadoc[]> {
-    if (search) {
-      return this.javadocRepository.find({
-        where: [
-          { title: Like(`%${search}%`) },
-          { description: Like(`%${search}%`) },
-          // Simple-array in TypeORM searches within the CSV string, so Like works for basic tags matching
-          { tags: Like(`%${search}%`) }
-        ],
-        order: { uploadDate: 'DESC' }
-      });
-    }
-    return this.javadocRepository.find({ order: { uploadDate: 'DESC' } });
-  }
-
-  async findPopular(limit: number = 3): Promise<Javadoc[]> {
-    return this.javadocRepository.find({
-      order: { views: 'DESC' },
-      take: limit,
-    });
-  }
-
-  async findRecent(limit: number = 10): Promise<Javadoc[]> {
-    return this.javadocRepository.find({
-      order: { uploadDate: 'DESC' },
-      take: limit,
-    });
-  }
-
   async findOne(id: string): Promise<Javadoc> {
-    const javadoc = await this.javadocRepository.findOne({ where: { id } });
+    const javadoc = await this.javadocRepository.findOne({ where: { id }, relations: { project: true } });
     if (!javadoc) {
       throw new NotFoundException(`Javadoc with ID ${id} not found`);
     }
     
-    // Increment views
+    // Increment views on version and project
     javadoc.views += 1;
     await this.javadocRepository.save(javadoc);
     
@@ -66,20 +39,31 @@ export class JavadocsService {
   }
 
   async create(createJavadocDto: CreateJavadocDto, file: Express.Multer.File): Promise<Javadoc> {
-    // Process the zip file
-    const folderName = await ZipHandler.extractZip(file, this.uploadDir);
+    const project = await this.projectsService.findByShortLink(createJavadocDto.projectId);
+    
+    const targetFolder = `${project.shortLink}/${createJavadocDto.version}`;
+    
+    // Process the zip file (overwrites existing files in this folder)
+    const folderName = await ZipHandler.extractZip(file, this.uploadDir, targetFolder);
 
-    const tagsArray = createJavadocDto.tags
-      ? createJavadocDto.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
-      : [];
+    // Check if version already exists
+    let javadoc = await this.javadocRepository.findOne({ 
+      where: { 
+        version: createJavadocDto.version,
+        project: { id: project.id }
+      } 
+    });
+
+    if (javadoc) {
+      javadoc.storagePath = folderName;
+      javadoc.uploadDate = new Date(); // Update upload date
+      return this.javadocRepository.save(javadoc);
+    }
 
     const newJavadoc = this.javadocRepository.create({
-      title: createJavadocDto.title,
-      description: createJavadocDto.description,
       version: createJavadocDto.version,
-      author: createJavadocDto.author,
-      tags: tagsArray,
       storagePath: folderName,
+      project: project,
     });
 
     return this.javadocRepository.save(newJavadoc);

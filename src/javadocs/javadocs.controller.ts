@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Query, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JavadocsService } from './javadocs.service';
 import { CreateJavadocDto } from './dto/create-javadoc.dto';
@@ -10,21 +10,6 @@ import { UserRole } from '../users/entities/user.entity';
 @Controller('javadocs')
 export class JavadocsController {
   constructor(private readonly javadocsService: JavadocsService) {}
-
-  @Get()
-  findAll(@Query('search') search?: string) {
-    return this.javadocsService.findAll(search);
-  }
-
-  @Get('popular')
-  findPopular() {
-    return this.javadocsService.findPopular(3);
-  }
-
-  @Get('recent')
-  findRecent() {
-    return this.javadocsService.findRecent(10);
-  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -42,8 +27,6 @@ export class JavadocsController {
     if (!file) {
       throw new BadRequestException('A file must be provided');
     }
-    // We limit size in a global interceptor or main config, but ideally Multer options limit it here
-    // For simplicity, limits can be configured globally.
     return this.javadocsService.create(createJavadocDto, file);
   }
 

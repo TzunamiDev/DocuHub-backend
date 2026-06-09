@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import AdmZip from 'adm-zip';
 import * as crypto from 'crypto';
 export class ZipHandler {
-  static async extractZip(file: Express.Multer.File, uploadDir: string): Promise<string> {
+  static async extractZip(file: Express.Multer.File, uploadDir: string, targetFolderName?: string): Promise<string> {
     // Basic validation for zip extension
     if (!file.originalname.toLowerCase().endsWith('.zip')) {
       throw new BadRequestException('File must be a ZIP archive');
@@ -15,9 +15,13 @@ export class ZipHandler {
       throw new BadRequestException('Invalid ZIP format');
     }
 
-    // Generate unique folder name
-    const uniqueFolderName = crypto.randomUUID();
-    const destDir = path.resolve(uploadDir, uniqueFolderName);
+    // Generate unique folder name or use provided
+    const folderName = targetFolderName || crypto.randomUUID();
+    const destDir = path.resolve(uploadDir, folderName);
+
+    if (fs.existsSync(destDir)) {
+      fs.rmSync(destDir, { recursive: true, force: true });
+    }
 
     if (!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true });
@@ -52,7 +56,7 @@ export class ZipHandler {
         }
       }
 
-      return uniqueFolderName;
+      return folderName;
     } catch (err) {
        // Cleanup on failure
        if (fs.existsSync(destDir)) {

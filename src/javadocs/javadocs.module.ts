@@ -4,9 +4,10 @@ import { ConfigModule } from '@nestjs/config';
 import { Javadoc } from './entities/javadoc.entity';
 import { JavadocsService } from './javadocs.service';
 import { JavadocsController } from './javadocs.controller';
+import { ProjectsModule } from '../projects/projects.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Javadoc]), ConfigModule],
+  imports: [TypeOrmModule.forFeature([Javadoc]), ConfigModule, ProjectsModule],
   controllers: [JavadocsController],
   providers: [JavadocsService],
 })

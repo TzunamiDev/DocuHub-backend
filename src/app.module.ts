@@ -15,6 +15,8 @@ import { JavadocsModule } from './javadocs/javadocs.module';
 import { User } from './users/entities/user.entity';
 import { Setting } from './settings/entities/setting.entity';
 import { Javadoc } from './javadocs/entities/javadoc.entity';
+import { Project } from './projects/entities/project.entity';
+import { ProjectsModule } from './projects/projects.module';
 
 @Module({
   imports: [
@@ -32,7 +34,7 @@ import { Javadoc } from './javadocs/entities/javadoc.entity';
         username: configService.get<string>('app.database.username'),
         password: configService.get<string>('app.database.password'),
         database: configService.get<string>('app.database.name'),
-        entities: [User, Setting, Javadoc],
+        entities: [User, Setting, Project, Javadoc],
         synchronize: true, // Use carefully in production!
       }),
     }),
@@ -58,6 +60,7 @@ import { Javadoc } from './javadocs/entities/javadoc.entity';
     AuthModule,
     SettingsModule,
     JavadocsModule,
+    ProjectsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
