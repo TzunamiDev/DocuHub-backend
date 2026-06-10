@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Param, Delete, UseGuards, UseInterceptors, UploadedFile, BadRequestException, Res, Req } from '@nestjs/common';
-import { Response, Request } from 'express';
+import type { Response, Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JavadocsService } from './javadocs.service';
 import { CreateJavadocDto } from './dto/create-javadoc.dto';

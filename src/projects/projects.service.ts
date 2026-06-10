@@ -13,16 +13,16 @@ export class ProjectsService {
 
   async findAll(search?: string): Promise<Project[]> {
     if (search) {
-      return this.projectsRepository.find({
-        where: [
-          { name: ILike(`%${search}%`) },
-          { description: ILike(`%${search}%`) },
-          { tags: ILike(`%${search}%`) },
-          { author: ILike(`%${search}%`) },
-          { shortLink: ILike(`%${search}%`) },
-        ],
-        relations: { versions: true },
-      });
+      const qb = this.projectsRepository.createQueryBuilder('project')
+        .leftJoinAndSelect('project.versions', 'version')
+        .where('project.name ILIKE :search', { search: `%${search}%` })
+        .orWhere('project.description ILIKE :search', { search: `%${search}%` })
+        .orWhere('project.author ILIKE :search', { search: `%${search}%` })
+        .orWhere('project.shortLink ILIKE :search', { search: `%${search}%` })
+        .orWhere('EXISTS (SELECT 1 FROM unnest(project.tags) tag WHERE tag ILIKE :search)', { search: `%${search}%` })
+        .orWhere('version.version ILIKE :search', { search: `%${search}%` });
+      
+      return qb.getMany();
     }
     return this.projectsRepository.find({ relations: { versions: true } });
   }

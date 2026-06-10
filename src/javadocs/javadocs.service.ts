@@ -6,7 +6,7 @@ import { CreateJavadocDto } from './dto/create-javadoc.dto';
 import { ZipHandler } from './utils/zip-handler';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Response, Request } from 'express';
+import type { Response, Request } from 'express';
 import { ProjectsService } from '../projects/projects.service';
 import * as fs from 'fs';
 import * as path from 'path';
