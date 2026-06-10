@@ -129,7 +129,7 @@ export class JavadocsService {
     }
 
     const ext = path.extname(fullPath);
-    const downloadName = `${javadoc.project.name.toLowerCase().replace(/\s+/g, '-')}-json-docs${ext}`;
+    const downloadName = `${javadoc.project.shortLink}-${javadoc.version}-json-docs${ext}`;
     res.download(fullPath, downloadName);
   }
 
