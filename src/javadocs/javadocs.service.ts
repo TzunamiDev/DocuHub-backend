@@ -128,7 +128,9 @@ export class JavadocsService {
       throw new NotFoundException(`File not found on server`);
     }
 
-    res.download(fullPath);
+    const ext = path.extname(fullPath);
+    const downloadName = `${javadoc.project.name.toLowerCase().replace(/\s+/g, '-')}-json-docs${ext}`;
+    res.download(fullPath, downloadName);
   }
 
   async remove(id: string): Promise<void> {
