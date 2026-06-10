@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, UseInterceptors, UploadedFile, BadRequestException, Res, Req } from '@nestjs/common';
+import { Response, Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JavadocsService } from './javadocs.service';
 import { CreateJavadocDto } from './dto/create-javadoc.dto';
@@ -28,6 +29,25 @@ export class JavadocsController {
       throw new BadRequestException('A file must be provided');
     }
     return this.javadocsService.create(createJavadocDto, file);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Post(':id/json-docs')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadJsonDocs(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('A file must be provided');
+    }
+    return this.javadocsService.uploadJsonDocs(id, file);
+  }
+
+  @Get(':id/json-docs/download')
+  downloadJsonDocs(@Param('id') id: string, @Res() res: Response, @Req() req: Request) {
+    return this.javadocsService.downloadJsonDocs(id, res, req);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

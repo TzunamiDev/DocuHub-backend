@@ -19,4 +19,7 @@ export class CreateProjectDto {
   @IsString()
   @IsNotEmpty()
   author: string;
+
+  @IsOptional()
+  jsonDocsRequireAuth?: boolean;
 }

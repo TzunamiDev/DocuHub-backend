@@ -67,6 +67,20 @@ export class ProjectsService {
     return this.projectsRepository.save(project);
   }
 
+  async update(id: string, updateProjectDto: any): Promise<Project> {
+    const project = await this.projectsRepository.findOne({ where: { id } });
+    if (!project) {
+      throw new NotFoundException(`Project not found`);
+    }
+
+    if (updateProjectDto.tags && typeof updateProjectDto.tags === 'string') {
+      updateProjectDto.tags = updateProjectDto.tags.split(',').map(t => t.trim());
+    }
+
+    Object.assign(project, updateProjectDto);
+    return this.projectsRepository.save(project);
+  }
+
   async remove(id: string): Promise<void> {
     const project = await this.projectsRepository.findOne({ where: { id } });
     if (!project) {

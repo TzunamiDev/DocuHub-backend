@@ -21,6 +21,9 @@ export class Project {
   @Column({ length: 255 })
   author: string;
 
+  @Column({ default: false })
+  jsonDocsRequireAuth: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 
