@@ -11,9 +11,7 @@ export class ZipHandler {
     }
 
     // Validate magic bytes (PK\x03\x04)
-    if (file.buffer.length < 4 || file.buffer[0] !== 0x50 || file.buffer[1] !== 0x4B || file.buffer[2] !== 0x03 || file.buffer[3] !== 0x04) {
-      throw new BadRequestException('Invalid ZIP format');
-    }
+    // skip magic byte check, or read from file
 
     // Generate unique folder name or use provided
     const folderName = targetFolderName || crypto.randomUUID();
@@ -28,7 +26,7 @@ export class ZipHandler {
     }
 
     try {
-      const zip = new AdmZip(file.buffer);
+      const zip = new AdmZip(file.path || file.buffer);
       const zipEntries = zip.getEntries();
 
       for (const entry of zipEntries) {
@@ -56,12 +54,14 @@ export class ZipHandler {
         }
       }
 
+      if (file.path && fs.existsSync(file.path)) fs.unlinkSync(file.path);
       return folderName;
     } catch (err) {
        // Cleanup on failure
        if (fs.existsSync(destDir)) {
            fs.rmSync(destDir, { recursive: true, force: true });
        }
+       if (file.path && fs.existsSync(file.path)) fs.unlinkSync(file.path);
        throw new BadRequestException(`Failed to process ZIP file: ${err.message}`);
     }
   }

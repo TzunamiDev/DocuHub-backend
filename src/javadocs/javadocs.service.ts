@@ -90,7 +90,12 @@ export class JavadocsService {
 
     const fileName = `json-docs${extension}`;
     const filePath = path.join(fullFolderPath, fileName);
-    fs.writeFileSync(filePath, file.buffer);
+    if (file.path) {
+      fs.copyFileSync(file.path, filePath);
+      fs.unlinkSync(file.path);
+    } else {
+      fs.writeFileSync(filePath, file.buffer);
+    }
 
     javadoc.jsonDocsPath = path.join(targetFolder, fileName).replace(/\\/g, '/');
     return this.javadocRepository.save(javadoc);
