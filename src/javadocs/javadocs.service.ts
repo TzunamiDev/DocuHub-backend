@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import type { Response, Request } from 'express';
 import { ProjectsService } from '../projects/projects.service';
+import { Project } from '../projects/entities/project.entity';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -37,6 +38,10 @@ export class JavadocsService {
     // Increment views on version and project
     javadoc.views += 1;
     await this.javadocRepository.save(javadoc);
+    
+    if (javadoc.project) {
+      await this.javadocRepository.manager.increment(Project, { id: javadoc.project.id }, 'views', 1);
+    }
     
     return javadoc;
   }

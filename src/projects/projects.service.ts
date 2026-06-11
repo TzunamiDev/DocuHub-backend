@@ -43,7 +43,7 @@ export class ProjectsService {
     });
   }
 
-  async findByShortLink(shortLink: string): Promise<Project> {
+  async findByShortLink(shortLink: string, incrementViews = false): Promise<Project> {
     const project = await this.projectsRepository.findOne({
       where: { shortLink },
       relations: { versions: true },
@@ -51,6 +51,12 @@ export class ProjectsService {
     if (!project) {
       throw new NotFoundException(`Project with shortLink '${shortLink}' not found`);
     }
+    
+    if (incrementViews) {
+      project.views += 1;
+      await this.projectsRepository.save(project);
+    }
+    
     return project;
   }
 

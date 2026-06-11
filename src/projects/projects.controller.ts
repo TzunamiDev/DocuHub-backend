@@ -27,7 +27,7 @@ export class ProjectsController {
 
   @Get(':shortLink')
   findOne(@Param('shortLink') shortLink: string) {
-    return this.projectsService.findByShortLink(shortLink);
+    return this.projectsService.findByShortLink(shortLink, true);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
