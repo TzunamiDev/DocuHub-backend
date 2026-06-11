@@ -44,12 +44,7 @@ export class JavadocsService {
   async create(createJavadocDto: CreateJavadocDto, file: Express.Multer.File): Promise<Javadoc> {
     const project = await this.projectsService.findByShortLink(createJavadocDto.projectId);
     
-    const targetFolder = `${project.shortLink}/${createJavadocDto.version}`;
-    
-    // Process the zip file (overwrites existing files in this folder)
-    const folderName = await ZipHandler.extractZip(file, this.uploadDir, targetFolder);
-
-    // Check if version already exists
+    // Check if version already exists BEFORE deleting the folder
     let javadoc = await this.javadocRepository.findOne({ 
       where: { 
         version: createJavadocDto.version,
@@ -57,10 +52,45 @@ export class JavadocsService {
       } 
     });
 
+    let tempJsonPath = null;
+    let preservedJsonDocsPath = null;
+
+    if (javadoc && javadoc.jsonDocsPath) {
+      const fullJsonPath = path.resolve(this.uploadDir, javadoc.jsonDocsPath);
+      if (fs.existsSync(fullJsonPath)) {
+        // Move to a temporary file in the uploadDir itself to avoid cross-device link errors
+        tempJsonPath = path.resolve(this.uploadDir, `temp-${Date.now()}-json-docs.zip`);
+        fs.renameSync(fullJsonPath, tempJsonPath);
+        preservedJsonDocsPath = javadoc.jsonDocsPath;
+      }
+    }
+
+    const targetFolder = `${project.shortLink}/${createJavadocDto.version}`;
+    
+    // Process the zip file (overwrites existing files in this folder, wipes folder first)
+    const folderName = await ZipHandler.extractZip(file, this.uploadDir, targetFolder);
+
+    // If we preserved a JSON file, move it back into the newly created folder
+    if (tempJsonPath && preservedJsonDocsPath) {
+      const fullJsonPath = path.resolve(this.uploadDir, preservedJsonDocsPath);
+      const jsonDir = path.dirname(fullJsonPath);
+      if (!fs.existsSync(jsonDir)) {
+        fs.mkdirSync(jsonDir, { recursive: true });
+      }
+      fs.renameSync(tempJsonPath, fullJsonPath);
+    }
+
     if (javadoc) {
       javadoc.storagePath = folderName;
       javadoc.uploadDate = new Date(); // Update upload date
-      javadoc.jsonDocsPath = null; // Clear JSON docs as the folder was recreated
+      
+      if (!tempJsonPath) {
+        // Only clear if we didn't preserve the JSON file
+        javadoc.jsonDocsPath = null; 
+      } else {
+        javadoc.jsonDocsPath = preservedJsonDocsPath;
+      }
+      
       return this.javadocRepository.save(javadoc);
     }
 
