@@ -19,7 +19,7 @@ export class ProjectsService {
         .orWhere('project.description ILIKE :search', { search: `%${search}%` })
         .orWhere('project.author ILIKE :search', { search: `%${search}%` })
         .orWhere('project.shortLink ILIKE :search', { search: `%${search}%` })
-        .orWhere("array_to_string(project.tags, ' ') ILIKE :search", { search: `%${search}%` })
+        .orWhere('project.tags ILIKE :search', { search: `%${search}%` })
         .orWhere('version.version ILIKE :search', { search: `%${search}%` });
       
       return qb.getMany();
