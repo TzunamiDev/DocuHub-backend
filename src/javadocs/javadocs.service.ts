@@ -52,8 +52,8 @@ export class JavadocsService {
       } 
     });
 
-    let tempJsonPath = null;
-    let preservedJsonDocsPath = null;
+    let tempJsonPath: string | null = null;
+    let preservedJsonDocsPath: string | null = null;
 
     if (javadoc && javadoc.jsonDocsPath) {
       const fullJsonPath = path.resolve(this.uploadDir, javadoc.jsonDocsPath);
