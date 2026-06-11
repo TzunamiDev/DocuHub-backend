@@ -18,7 +18,7 @@ export class Javadoc {
   @Column({ length: 500 })
   storagePath: string;
 
-  @Column({ length: 500, nullable: true })
+  @Column({ type: 'varchar', length: 500, nullable: true })
   jsonDocsPath: string | null;
 
   @ManyToOne(() => Project, project => project.versions, { onDelete: 'CASCADE' })
