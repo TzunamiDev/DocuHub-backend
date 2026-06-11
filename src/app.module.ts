@@ -18,6 +18,8 @@ import { Javadoc } from './javadocs/entities/javadoc.entity';
 import { Project } from './projects/entities/project.entity';
 import { ProjectsModule } from './projects/projects.module';
 
+import { HealthModule } from './health/health.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -61,6 +63,7 @@ import { ProjectsModule } from './projects/projects.module';
     SettingsModule,
     JavadocsModule,
     ProjectsModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
