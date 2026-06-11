@@ -60,6 +60,7 @@ export class JavadocsService {
     if (javadoc) {
       javadoc.storagePath = folderName;
       javadoc.uploadDate = new Date(); // Update upload date
+      javadoc.jsonDocsPath = null; // Clear JSON docs as the folder was recreated
       return this.javadocRepository.save(javadoc);
     }
 
@@ -140,7 +141,7 @@ export class JavadocsService {
     }
 
     // Remove from DB
-    await this.javadocRepository.remove(javadoc);
+    await this.javadocRepository.delete(id);
 
     // Remove from file system
     const fullPath = path.resolve(this.uploadDir, javadoc.storagePath);

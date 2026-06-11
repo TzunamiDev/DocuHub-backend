@@ -19,7 +19,7 @@ export class Javadoc {
   storagePath: string;
 
   @Column({ length: 500, nullable: true })
-  jsonDocsPath: string;
+  jsonDocsPath: string | null;
 
   @ManyToOne(() => Project, project => project.versions, { onDelete: 'CASCADE' })
   project: Project;
