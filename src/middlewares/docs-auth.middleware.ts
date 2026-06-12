@@ -52,7 +52,7 @@ export class DocsAuthMiddleware implements NestMiddleware {
     }
 
     // Project is private, check for Admin JWT
-    const token = req.cookies?.['jwt'];
+    const token = req.cookies?.['Authentication'];
     if (!token) {
       return res.status(403).send('Forbidden: Project is private and requires admin authentication.');
     }
