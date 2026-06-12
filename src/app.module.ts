@@ -72,9 +72,7 @@ import { DocsAuthMiddleware } from './middlewares/docs-auth.middleware';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(DocsAuthMiddleware)
-      .forRoutes('/docs/*path');
+    // Middleware configuration if needed
   }
 }
 

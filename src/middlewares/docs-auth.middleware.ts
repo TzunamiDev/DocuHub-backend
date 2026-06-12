@@ -38,8 +38,6 @@ export class DocsAuthMiddleware implements NestMiddleware {
       isPrivate = cached.isPrivate;
     } else {
       try {
-        // Use findByShortLink, but we pass isAdmin=true to force it to return the project even if private
-        // so we can check its isPrivate status
         const project = await this.projectsService.findByShortLink(shortLink, false, true);
         isPrivate = project.isPrivate;
         this.cache.set(shortLink, { isPrivate, timestamp: now });

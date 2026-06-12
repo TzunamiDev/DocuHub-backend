@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { DocsAuthMiddleware } from './middlewares/docs-auth.middleware';
 
 import cookieParser from 'cookie-parser';
 
@@ -38,6 +39,10 @@ async function bootstrap() {
 
   // Global Exception Filter
   app.useGlobalFilters(new HttpExceptionFilter());
+
+  // Apply DocsAuthMiddleware directly to Express to bypass the /api global prefix restriction
+  const docsAuthMiddleware = app.get(DocsAuthMiddleware);
+  app.use('/docs', (req: any, res: any, next: any) => docsAuthMiddleware.use(req, res, next));
 
   await app.listen(process.env.PORT ?? 3000);
 }
