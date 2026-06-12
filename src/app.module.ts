@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -19,6 +19,8 @@ import { Project } from './projects/entities/project.entity';
 import { ProjectsModule } from './projects/projects.module';
 
 import { HealthModule } from './health/health.module';
+
+import { DocsAuthMiddleware } from './middlewares/docs-auth.middleware';
 
 @Module({
   imports: [
@@ -66,6 +68,13 @@ import { HealthModule } from './health/health.module';
     HealthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, DocsAuthMiddleware],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(DocsAuthMiddleware)
+      .forRoutes('/docs/*path');
+  }
+}
+

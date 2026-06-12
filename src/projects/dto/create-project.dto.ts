@@ -22,4 +22,7 @@ export class CreateProjectDto {
 
   @IsOptional()
   jsonDocsRequireAuth?: boolean;
+
+  @IsOptional()
+  isPrivate?: boolean;
 }

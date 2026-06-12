@@ -24,6 +24,9 @@ export class Project {
   @Column({ default: false })
   jsonDocsRequireAuth: boolean;
 
+  @Column({ default: false })
+  isPrivate: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

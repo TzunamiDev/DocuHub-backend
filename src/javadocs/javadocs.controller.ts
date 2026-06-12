@@ -7,6 +7,7 @@ import * as os from 'os';
 import { JavadocsService } from './javadocs.service';
 import { CreateJavadocDto } from './dto/create-javadoc.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
@@ -15,9 +16,11 @@ import { UserRole } from '../users/entities/user.entity';
 export class JavadocsController {
   constructor(private readonly javadocsService: JavadocsService) {}
 
+  @UseGuards(OptionalJwtAuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.javadocsService.findOne(id);
+  findOne(@Param('id') id: string, @Req() req?: any) {
+    const isAdmin = req?.user?.role === UserRole.ADMIN;
+    return this.javadocsService.findOne(id, isAdmin);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

@@ -29,9 +29,9 @@ export class JavadocsService {
     }
   }
 
-  async findOne(id: string): Promise<Javadoc> {
+  async findOne(id: string, isAdmin = false): Promise<Javadoc> {
     const javadoc = await this.javadocRepository.findOne({ where: { id }, relations: { project: true } });
-    if (!javadoc) {
+    if (!javadoc || (javadoc.project?.isPrivate && !isAdmin)) {
       throw new NotFoundException(`Javadoc with ID ${id} not found`);
     }
     
@@ -47,7 +47,7 @@ export class JavadocsService {
   }
 
   async create(createJavadocDto: CreateJavadocDto, file: Express.Multer.File): Promise<Javadoc> {
-    const project = await this.projectsService.findByShortLink(createJavadocDto.projectId);
+    const project = await this.projectsService.findByShortLink(createJavadocDto.projectId, false, true);
     
     // Check if version already exists BEFORE deleting the folder
     let javadoc = await this.javadocRepository.findOne({ 

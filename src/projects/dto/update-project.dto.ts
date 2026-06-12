@@ -23,5 +23,9 @@ export class UpdateProjectDto {
   @IsOptional()
   @IsBoolean()
   jsonDocsRequireAuth?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isPrivate?: boolean;
 }
 

@@ -11,41 +11,48 @@ export class ProjectsService {
     private projectsRepository: Repository<Project>,
   ) {}
 
-  async findAll(search?: string): Promise<Project[]> {
-    if (search) {
-      const qb = this.projectsRepository.createQueryBuilder('project')
-        .leftJoinAndSelect('project.versions', 'version')
-        .where('project.name ILIKE :search', { search: `%${search}%` })
-        .orWhere('project.description ILIKE :search', { search: `%${search}%` })
-        .orWhere('project.author ILIKE :search', { search: `%${search}%` })
-        .orWhere('project.shortLink ILIKE :search', { search: `%${search}%` })
-        .orWhere('project.tags ILIKE :search', { search: `%${search}%` })
-        .orWhere('version.version ILIKE :search', { search: `%${search}%` });
+  async findAll(search?: string, isAdmin = false): Promise<Project[]> {
+    const qb = this.projectsRepository.createQueryBuilder('project')
+      .leftJoinAndSelect('project.versions', 'version');
       
-      return qb.getMany();
+    if (!isAdmin) {
+      qb.andWhere('project.isPrivate = :isPrivate', { isPrivate: false });
     }
-    return this.projectsRepository.find({ relations: { versions: true } });
+
+    if (search) {
+      qb.andWhere('(project.name ILIKE :search OR project.description ILIKE :search OR project.author ILIKE :search OR project.shortLink ILIKE :search OR project.tags ILIKE :search OR version.version ILIKE :search)', { search: `%${search}%` });
+    }
+    return qb.getMany();
   }
 
-  async findPopular(limit: number): Promise<Project[]> {
+  async findPopular(limit: number, isAdmin = false): Promise<Project[]> {
+    const where = isAdmin ? {} : { isPrivate: false };
     return this.projectsRepository.find({
+      where,
       order: { views: 'DESC' },
       take: limit,
       relations: { versions: true },
     });
   }
 
-  async findRecent(limit: number): Promise<Project[]> {
+  async findRecent(limit: number, isAdmin = false): Promise<Project[]> {
+    const where = isAdmin ? {} : { isPrivate: false };
     return this.projectsRepository.find({
+      where,
       order: { createdAt: 'DESC' },
       take: limit,
       relations: { versions: true },
     });
   }
 
-  async findByShortLink(shortLink: string, incrementViews = false): Promise<Project> {
+  async findByShortLink(shortLink: string, incrementViews = false, isAdmin = false): Promise<Project> {
+    const where: any = { shortLink };
+    if (!isAdmin) {
+      where.isPrivate = false;
+    }
+    
     const project = await this.projectsRepository.findOne({
-      where: { shortLink },
+      where,
       relations: { versions: true },
     });
     if (!project) {
