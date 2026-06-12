@@ -15,11 +15,15 @@ export class DocsAuthMiddleware implements NestMiddleware {
   ) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
-    const urlParts = req.url.split('/').filter(p => p.length > 0);
-    // URL under /docs is typically /docs/shortLink/version/...
-    // Since we are applying this to /docs, req.url might be /shortLink/version/...
-    // Let's get the first part of the URL
-    const shortLink = urlParts[0];
+    const urlParts = req.originalUrl.split('?')[0].split('/').filter(p => p.length > 0);
+    
+    // URL is typically /api/docs/shortLink/version/...
+    const docsIndex = urlParts.indexOf('docs');
+    if (docsIndex === -1 || docsIndex >= urlParts.length - 1) {
+      return next();
+    }
+    
+    const shortLink = urlParts[docsIndex + 1];
 
     if (!shortLink) {
       return next();
